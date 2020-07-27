@@ -4,7 +4,7 @@ const Schema = mongoose.Schema;
 const projectSchema = new Schema(
   {
     projectname: { type: String, required: true, max: 32, trim: true },
-    projectcode: { type: String, required: true, max: 10, trim: true },
+    projectcode: { type: String, max: 10, trim: true },
     // We can look into the below again post POC
     // plannedStartDate: {type: Date, require: 'Project start date is required'},
     // plannedEndDate: {type: Date},

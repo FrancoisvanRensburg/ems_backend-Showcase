@@ -103,6 +103,8 @@ exports.createTaskForProject = async (req, res) => {
   }
 };
 
+// exports.updateTaskName = async(req, res);
+
 // Update current task
 exports.updateTaskById = async (req, res) => {
   const {
@@ -135,6 +137,8 @@ exports.updateTaskById = async (req, res) => {
   if (ragstatus) taskFields.ragstatus = ragstatus;
   if (progress) taskFields.progress = progress;
 
+  console.log(taskFields);
+
   try {
     let task = {};
 
@@ -145,7 +149,7 @@ exports.updateTaskById = async (req, res) => {
 
       if (currentAssignee) {
         console.log('Current assignee exists');
-        if (!currentAssignee.equals(assignee)) {
+        if (!currentAssignee._id.equals(assignee._id)) {
           console.log('Assignees differ');
           const { tasks } = await User.findOne({ _id: currentAssignee });
 

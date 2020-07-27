@@ -28,7 +28,55 @@ exports.createProject = async (req, res) => {
     project.save();
     company.save();
 
-    res.json(project);
+    res.json({
+      projectname: project.projectname,
+      projectcode: project.projectcode,
+      description: project.description,
+      _id: project._id,
+    });
+  } catch (error) {
+    if (error) {
+      console.error(error.message);
+      res.status(500).send('Server Error');
+    }
+  }
+};
+
+exports.createProjectName = async (req, res) => {
+  const { projectname } = req.body;
+
+  const projectFields = {};
+  if (projectname) projectFields.projectname = projectname;
+  projectFields.ownercompany = req.data.comp;
+  projectFields.projectmanager = req.data.user;
+
+  try {
+    const project = new Project(projectFields);
+    const company = await Company.findOne({ _id: req.data.comp });
+    const user = await User.findOne({ _id: req.data.user });
+
+    user.projects.unshift(project._id);
+    company.projects.unshift(project._id);
+
+    user.save();
+    project.save();
+    company.save();
+
+    res.json({ projectname: project.projectname });
+  } catch (error) {
+    if (error) {
+      console.error(error.message);
+      res.status(500).send('Server Error');
+    }
+  }
+};
+
+exports.getProjectContributors = async (req, res) => {
+  try {
+    const project = await Project.findOne({ _id: req.params.projectId })
+      .select('contributors')
+      .populate('contributors', 'firstname lastname name');
+    res.json(project.contributors);
   } catch (error) {
     if (error) {
       console.error(error.message);
@@ -156,9 +204,38 @@ exports.updateProjectSetup = async (req, res) => {
       { _id: req.params.projectId },
       { $set: projectFields },
       { new: true }
+    ).select(
+      '-contributors -tasks -comments -sections -projectcode -projectname'
     );
 
-    res.json(project);
+    // res.json(project);
+    res.json({
+      actualstartdate: project.actualstartdate,
+      actualenddate: project.actualenddate,
+      tpe: project.tpe,
+      sector: project.sector,
+      description: project.description,
+    });
+  } catch (error) {
+    if (error) {
+      console.error(error.message);
+      res.status(500).send('Server Error');
+    }
+  }
+};
+
+exports.getProjectClient = async (req, res) => {
+  try {
+    const project = await Project.findOne({ _id: req.params.projectId })
+      .select('client contactname contactnumber contactemail')
+      .populate('client', 'name');
+
+    res.json({
+      client: project.client,
+      contactname: project.contactname,
+      contactnumber: project.contactnumber,
+      contactemail: project.contactemail,
+    });
   } catch (error) {
     if (error) {
       console.error(error.message);
@@ -184,7 +261,16 @@ exports.addProjectClient = async (req, res) => {
       { new: true }
     );
 
-    res.json(project);
+    await project.save();
+
+    console.log(project);
+
+    res.json({
+      client: project.client,
+      contactname: project.contactname,
+      contactnumber: project.contactnumber,
+      contactemail: project.contactemail,
+    });
   } catch (error) {
     if (error) {
       console.error(error.message);

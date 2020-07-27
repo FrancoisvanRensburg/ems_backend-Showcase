@@ -12,9 +12,12 @@ const { runValidation } = require('../validators/index');
 
 const {
   createProject,
+  createProjectName,
+  getProjectContributors,
   addContributors,
   changeProjectManager,
   updateProjectSetup,
+  getProjectClient,
   addProjectClient,
   deleteProjectById,
   getAllProjects,
@@ -29,6 +32,9 @@ const {
 // POST api/projects
 // Private
 router.post('/', auth, createProjectValidator, runValidation, createProject);
+// router.post('/', auth, createProjectName);
+
+router.get('/contributors/:projectId', auth, getProjectContributors);
 
 router.post('/contributors/:projectId', auth, addContributors);
 
@@ -41,6 +47,8 @@ router.post(
   runValidation,
   updateProjectSetup
 );
+
+router.get('/client/:projectId', auth, getProjectClient);
 
 router.post('/client/:projectId', auth, addProjectClient);
 
