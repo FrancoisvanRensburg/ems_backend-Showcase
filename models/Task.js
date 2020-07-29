@@ -16,7 +16,7 @@ const taskSchema = new Schema(
     actualenddate: { type: Date },
     duration: { type: Number },
     effort: { type: Number },
-    priority: { type: Number },
+    priority: { type: String },
     predecessor: { type: String },
     constrainttype: { type: String },
     ragstatus: { type: String },

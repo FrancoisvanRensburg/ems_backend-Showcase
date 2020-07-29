@@ -4,6 +4,7 @@ const Project = require('../models/Project');
 const Task = require('../models/Task');
 const ActionNotification = require('../models/ActionNotification');
 const Section = require('../models/Section');
+const { findOne } = require('../models/Company');
 
 // Investigate duel linking for notifiations.
 // Currently the notifications are saved to the user model,
@@ -103,7 +104,28 @@ exports.createTaskForProject = async (req, res) => {
   }
 };
 
-// exports.updateTaskName = async(req, res);
+exports.updateTaskName = async (req, res) => {
+  const { taskname } = req.body;
+  const taskFields = {};
+  if (taskname) taskFields.taskname = taskname;
+  try {
+    let task = {};
+
+    task = await Task.findOneAndUpdate(
+      { _id: req.params.taskId },
+      { $set: taskFields },
+      { new: true }
+    ).select('taskname');
+    // task.save();
+    // res.json({ taskname: task.taskname });
+    res.json(task);
+  } catch (error) {
+    if (error) {
+      console.error(error.message);
+      res.status(500).send('Server Error');
+    }
+  }
+};
 
 // Update current task
 exports.updateTaskById = async (req, res) => {
@@ -137,7 +159,7 @@ exports.updateTaskById = async (req, res) => {
   if (ragstatus) taskFields.ragstatus = ragstatus;
   if (progress) taskFields.progress = progress;
 
-  console.log(taskFields);
+  // console.log(taskFields);
 
   try {
     let task = {};
@@ -225,7 +247,12 @@ exports.updateTaskById = async (req, res) => {
     }
     task.save();
 
-    res.json(task);
+    const upTask = await Task.findOne({ _id: req.params.taskId }).populate(
+      'assignee',
+      'firstname lastname name'
+    );
+
+    res.json(upTask);
   } catch (error) {
     if (error) {
       console.error(error.message);
@@ -275,7 +302,7 @@ exports.deleteTaskById = async (req, res) => {
       { new: true }
     ).populate(
       'tasks',
-      'taskname actualstartdate actualenddate effort ragstatus progress'
+      'taskname actualstartdate actualenddate effort ragstatus progress priority'
     );
     newProject.save();
 
@@ -292,10 +319,13 @@ exports.deleteTaskById = async (req, res) => {
 
 exports.getTaskById = async (req, res) => {
   try {
-    const task = await Task.findOne({ _id: req.params.taskId }).populate(
-      'assignee',
-      'firstname lastname _id'
-    );
+    const task = await Task.findOne({ _id: req.params.taskId })
+      .populate('assignee', 'firstname lastname _id')
+      .populate({
+        path: 'section',
+        select: 'label _id',
+      });
+    // .populate('section', 'label _id');
 
     res.json(task);
   } catch (error) {
@@ -362,7 +392,17 @@ exports.addSectionToTask = async (req, res) => {
 
     task.save();
 
-    res.json(task);
+    const newTask = await Task.findOne({ _id: req.params.taskId }).populate(
+      'section',
+      'label'
+    );
+
+    const nwSect = await Section.findOne({ _id: section }).select(
+      '-project -tasks'
+    );
+
+    // res.json({ section: task.section });
+    res.json(nwSect);
   } catch (error) {
     if (error) {
       console.error(error.message);
