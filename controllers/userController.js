@@ -2,13 +2,12 @@ const Company = require('../models/Company');
 const Project = require('../models/Project');
 const Task = require('../models/Task');
 const User = require('../models/User');
-const router = require('../routes/tasks');
 
 // Get all users for a company
 exports.getAllUsersForCompany = async (req, res) => {
   try {
     const employees = await User.find({ company: req.data.comp }).select(
-      '-password -company -actionnotifications'
+      '-password -company -actionnotifications -projects -tasks'
     );
     res.json(employees);
   } catch (error) {

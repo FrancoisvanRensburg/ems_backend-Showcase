@@ -1,4 +1,5 @@
 const Company = require('../models/Company');
+const User = require('../models/User');
 
 // Get all company info, i.e. company, employees, projects
 exports.companyInfo = async (req, res) => {
@@ -50,6 +51,30 @@ exports.companyUpdate = async (req, res) => {
     company.save();
     res.json(company);
     // console.log(company);
+  } catch (error) {
+    if (error) {
+      console.error(error.message);
+      res.status(500).send('Server Error');
+    }
+  }
+};
+
+exports.getAllAddedUsers = async (req, res) => {
+  try {
+    const employees = await User.find({ company: req.data.comp }).select(
+      '-password -company -actionnotifications -projects -tasks'
+    );
+
+    const size = 2;
+    const newArray = employees.reduce((acc, curr, i) => {
+      if (!(i % size)) {
+        acc.push(employees.slice(i, i + size));
+      }
+      return acc;
+    }, []);
+
+    // console.log(newArray.reverse());
+    res.json(newArray.reverse());
   } catch (error) {
     if (error) {
       console.error(error.message);
