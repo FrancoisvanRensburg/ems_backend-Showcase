@@ -61,11 +61,20 @@ exports.companyUpdate = async (req, res) => {
 
 exports.getAllAddedUsers = async (req, res) => {
   try {
-    const employees = await User.find({ company: req.data.comp }).select(
-      '-password -company -actionnotifications -projects -tasks'
-    );
+    // const employees = await User.find({ company: req.data.comp }).select(
+    //   '-password -company -actionnotifications -projects -tasks'
+    // );
 
-    const size = 2;
+    const comp = await Company.findOne({ _id: req.data.comp })
+      .select('employees')
+      .populate({
+        path: 'employees',
+        select: 'firstname lastname email usertype',
+      });
+
+    const employees = comp.employees;
+
+    const size = 5;
     const newArray = employees.reduce((acc, curr, i) => {
       if (!(i % size)) {
         acc.push(employees.slice(i, i + size));
@@ -74,7 +83,7 @@ exports.getAllAddedUsers = async (req, res) => {
     }, []);
 
     // console.log(newArray.reverse());
-    res.json(newArray.reverse());
+    res.json(newArray);
   } catch (error) {
     if (error) {
       console.error(error.message);

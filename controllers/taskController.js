@@ -4,7 +4,6 @@ const Project = require('../models/Project');
 const Task = require('../models/Task');
 const ActionNotification = require('../models/ActionNotification');
 const Section = require('../models/Section');
-const { findOne } = require('../models/Company');
 
 // Investigate duel linking for notifiations.
 // Currently the notifications are saved to the user model,
