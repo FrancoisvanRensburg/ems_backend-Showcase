@@ -109,3 +109,58 @@ exports.registerUser = async (req, res) => {
     }
   }
 };
+
+exports.addNewUsersArray = async (req, res) => {
+  const { email, password, firstname, lastname, usertype } = req.body;
+
+  const userFields = {};
+  if (email) userFields.email = email;
+  if (password) userFields.password = password;
+  if (firstname) userFields.firstname = firstname;
+  if (lastname) userFields.lastname = lastname;
+  if (usertype) userFields.usertype = usertype;
+  userFields.company = req.data.comp;
+
+  try {
+    // Create new user object
+    const user = new User(userFields);
+
+    // Encrypt user password
+    const salt = await bcrypt.genSalt(10);
+    user.password = await bcrypt.hash(password, salt);
+
+    // Create dual link in company
+    const company = await Company.findOne({ _id: req.data.comp });
+    company.employees.unshift(user._id);
+
+    // Save user and company
+    await user.save();
+    await company.save();
+
+    const comp = await Company.findOne({ _id: req.data.comp }).populate(
+      'employees',
+      'firstname lastname email usertype'
+    );
+
+    const newArray = comp.employees;
+
+    const size = 5;
+    const manArr = newArray.reduce((acc, curr, i) => {
+      if (!(i % size)) {
+        acc.push(newArray.slice(i, i + size));
+      }
+      return acc;
+    }, []);
+
+    // console.log(manArr);
+
+    // res.json(comp.employees);
+    // res.json(newArray);
+    res.json(manArr);
+  } catch (error) {
+    if (error) {
+      console.error(error.message);
+      res.status(500).send('Server Error');
+    }
+  }
+};

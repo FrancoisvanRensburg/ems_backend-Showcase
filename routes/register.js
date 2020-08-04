@@ -5,6 +5,7 @@ const auth = require('../middleware/auth');
 const {
   registerCompany,
   registerUser,
+  addNewUsersArray,
 } = require('../controllers/registerController');
 
 const {
@@ -22,6 +23,14 @@ router.post(
   userRegistrationValidator,
   runValidation,
   registerUser
+);
+
+router.post(
+  '/newuser',
+  auth,
+  userRegistrationValidator,
+  runValidation,
+  addNewUsersArray
 );
 
 module.exports = router;
